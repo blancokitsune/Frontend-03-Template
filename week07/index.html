@@ -1,0 +1,12 @@
+<main style="font-size: 20px">
+  <h1 style="font-size: 30px">whatwg</h1>
+</main>
+<script src="./apiCategory.js"></script>
+<script>
+  let content = "<p>"
+  for (let s of namesSet) {
+    content += `<span style={margin: 0 4px}>${s}<span> - `
+  }
+  content += "</p"
+  document.querySelector("main").insertAdjacentHTML("beforeend", content)
+</script>
