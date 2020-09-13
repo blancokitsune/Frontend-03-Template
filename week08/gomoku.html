@@ -1,0 +1,169 @@
+<style>
+  canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #000;
+    background: #d49723;
+  }
+</style>
+<canvas id="gomoku"> 阿sir，换个好点的浏览器吧 </canvas>
+
+<!-- <div style="width: 100px; height: 100px; background: hsl(270, 60%, 50%, 0.15)"></div> -->
+<script>
+  const board = document.querySelector("#gomoku")
+
+  class gomuku {
+    constructor(canvas, width = 560, height = 560) {
+      this.canvas = canvas
+      this.context = this.canvas.getContext("2d")
+      this.width = width
+      this.height = height
+      this.lineNum = 13
+
+      this.canvas.width = this.width
+      this.canvas.height = this.height
+      this.init()
+    }
+    // 初始化棋盘
+    init() {
+      this.color = 1
+      this.pieceList = []
+      this.ai = true
+      this.genGrid()
+      this.genStar()
+      this.canvas.addEventListener("click", (e) => {
+        this.userMove(e)
+      })
+    }
+    // 绘制棋盘横纵线
+    genGrid() {
+      const cellWidth = this.width / (this.lineNum + 1)
+      for (let i = 0; i < this.lineNum; i++) {
+        this.context.beginPath()
+        this.context.moveTo(0, cellWidth * (i + 1))
+        this.context.lineTo(this.width, cellWidth * (i + 1))
+        this.context.strokeStyle = "#000"
+        this.context.closePath()
+        this.context.stroke()
+      }
+      /*y方向的线*/
+      for (let i = 0; i < this.lineNum; i++) {
+        this.context.beginPath()
+        this.context.moveTo(cellWidth * (i + 1), 0)
+        this.context.lineTo(cellWidth * (i + 1), this.height)
+        this.context.strokeStyle = "#000"
+        this.context.closePath()
+        this.context.stroke()
+      }
+    }
+    // 绘制星
+    genStar() {
+      const cellWidth = this.width / (this.lineNum + 1)
+      this.genCircle(cellWidth * 3, cellWidth * 3, 5, "#000")
+      this.genCircle(this.width - cellWidth * 3, cellWidth * 3, 5, "#000")
+      this.genCircle(cellWidth * 3, this.height - cellWidth * 3, 5, "#000")
+      this.genCircle(this.width - cellWidth * 3, this.height - cellWidth * 3, 5, "#000")
+    }
+    // 绘制圆形
+    genCircle(start, end, r, color) {
+      this.context.beginPath()
+      this.context.moveTo(start - r, end)
+      this.context.arc(start, end, r, 2 * Math.PI, 0, true)
+      this.context.strokeStyle = color
+      this.context.closePath()
+      this.context.fillStyle = color
+      this.context.fill()
+    }
+    // 判断是否已经有落子
+    isExist(cellRect) {
+      return this.pieceList.find((piece) => piece.x === cellRect.x && piece.y === cellRect.y)
+    }
+    // 玩家落子
+    userMove(e) {
+      const cellWidth = this.width / (this.lineNum + 1)
+      const cellRect = {
+        x: Math.round(e.offsetX / cellWidth) * cellWidth,
+        y: Math.round(e.offsetY / cellWidth) * cellWidth,
+        color: this.color,
+      }
+      // 判断是否已经有落子,有则不落子
+      if (this.isExist(cellRect)) return
+      this.genCircle(cellRect.x, cellRect.y, ~~(cellWidth / 3), `hsl(120, 100%, ${this.color ? 0 : "100"}%)`)
+      this.pieceList.push(cellRect)
+      if (this.check(cellRect)) {
+        this.restartGame()
+        return
+      }
+      this.color = +!this.color
+      // this.color = !this.color & 1
+    }
+    // ai落子，未实现
+    computerMove() {}
+    willWin() {}
+    bestChoice() {}
+    // 判断胜负
+    check(piece) {
+      const cellWidth = this.width / (this.lineNum + 1)
+
+      const winCase = []
+
+      for (let k = 0; k < 4; k++) {
+        winCase[k] = winCase[k] || []
+
+        for (let i = 0; i < 5; i++) {
+          winCase[k][i] = winCase[k][i] || []
+          for (let j = -i; j < 5 - i; j++) {
+            if (k === 0) {
+              winCase[k][i].push({
+                x: piece.x - j * cellWidth,
+                y: piece.y,
+                color: piece.color,
+              })
+            }
+
+            if (k === 1) {
+              winCase[k][i].push({
+                x: piece.x,
+                y: piece.y - j * cellWidth,
+                color: piece.color,
+              })
+            }
+
+            if (k === 2) {
+              winCase[k][i].push({
+                x: piece.x - j * cellWidth,
+                y: piece.y - j * cellWidth,
+                color: piece.color,
+              })
+            }
+
+            if (k === 3) {
+              winCase[k][i].push({
+                x: piece.x + j * cellWidth,
+                y: piece.y - j * cellWidth,
+                color: piece.color,
+              })
+            }
+          }
+        }
+      }
+      const win = winCase.some((position) => position.some((winList) => winList.every((item) => this.pieceList.filter((p) => item.x === p.x && item.y === p.y && item.color === p.color).length > 0)))
+      return win
+    }
+    // 是否开启ai
+    shiftAi() {
+      this.ai = !this.ai
+    }
+    // 重新开始
+    restartGame() {
+      const name = this.color ? "黑棋" : "白棋"
+      alert(`${name} 赢！`)
+      this.canvas.width = this.width
+      this.init()
+    }
+  }
+
+  const g = new gomuku(board)
+</script>
