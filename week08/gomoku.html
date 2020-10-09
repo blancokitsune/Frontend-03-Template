@@ -30,6 +30,7 @@
     init() {
       this.color = 1
       this.pieceList = []
+      this.goData = Array.from({ length: 15 }, () => Array(15).fill(null))
       this.ai = true
       this.genGrid()
       this.genStar()
@@ -88,10 +89,18 @@
         y: Math.round(e.offsetY / cellWidth) * cellWidth,
         color: this.color,
       }
-      // 判断是否已经有落子,有则不落子
-      if (this.isExist(cellRect)) return
+      let { x, y } = cellRect
+      ;[x, y] = [Math.abs(x / cellWidth), Math.abs(y / cellWidth)]
+      // v1:只维护已落子的 判断是否已经有落子,有则不落子
+      // if (this.isExist(cellRect)) return
+      // this.genCircle(cellRect.x, cellRect.y, ~~(cellWidth / 3), `hsl(120, 100%, ${this.color ? 0 : "100"}%)`)
+      // this.pieceList.push(cellRect)
+
+      // v2：维护全局棋盘 判断是否有子，并添加至棋盘状态
+      if (this.goData[x][y] !== null) return
       this.genCircle(cellRect.x, cellRect.y, ~~(cellWidth / 3), `hsl(120, 100%, ${this.color ? 0 : "100"}%)`)
-      this.pieceList.push(cellRect)
+      this.goData[x][y] = cellRect
+      console.log(this.goData)
       if (this.check(cellRect)) {
         this.restartGame()
         return
