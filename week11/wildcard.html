@@ -25,11 +25,11 @@
 
     // 第一个*的索引值
     let lastIndex = i
+    // 每一段的匹配内容
     for (let p = 0; p < starCount - 1; p++) {
       i++
+      
       let subPattern = ""
-      console.log(i, pattern[i])
-
       while (pattern[i] !== "*") {
         subPattern += pattern[i]
         i++
@@ -37,7 +37,8 @@
 
       let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g")
       reg.lastIndex = lastIndex
-      // console.log(reg.exec(source))
+
+      if(!reg.exec(source)) return false
       lastIndex = reg.lastIndex
     }
 
@@ -48,5 +49,5 @@
     return true
   }
 
-  find("asfafafs", "as*af*f*?d")
+  find("abcabcabxaac", "a*b?*b?x*c")
 </script>
