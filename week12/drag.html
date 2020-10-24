@@ -1,0 +1,77 @@
+<html>
+  <div id="containter">
+    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Voluptates saepe veniam quia ex sed. Facere ducimus quaerat, voluptas dolorum eveniet
+    dolores adipisci amet odio quas sit molestiae unde voluptates exercitationem. Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque
+    consequuntur necessitatibus omnis minus sed modi dolore nostrum sunt deserunt est excepturi animi labore nobis quo aliquid laudantium, praesentium
+    doloremque saepe. Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea voluptatem numquam nostrum magnam quam vero voluptas! Qui, aut
+    asperiores. Cumque, impedit magni fugiat debitis sint modi consequatur iste quam rem. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+    Ratione perspiciatis, assumenda magni sint praesentium excepturi illo nihil! Aspernatur accusamus asperiores aliquam quam, dolores numquam
+    temporibus magnam recusandae quod eligendi nihil. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta blanditiis suscipit saepe est
+    ipsa vel, nostrum optio et modi nulla, ullam quae, dignissimos accusantium. Veritatis cupiditate ex eos maiores tenetur! Lorem ipsum dolor sit
+    amet consectetur, adipisicing elit. Perspiciatis eius modi delectus perferendis esse ipsam voluptas atque eum vero, similique, necessitatibus, in
+    aspernatur id eaque! Temporibus dolore debitis facilis laborum. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Tempora ratione eveniet
+    minus autem accusantium illo excepturi, laboriosam impedit, consequatur neque quasi mollitia sit provident in quas, doloremque doloribus! Minima,
+    eveniet?
+  </div>
+  <div id="dragable" style="display: inline-block; width: 100px; height: 100px; background: pink"></div>
+</html>
+
+<script>
+  const dragable = document.querySelector("#dragable");
+  const containter = document.querySelector("#containter");
+
+  let baseX = 0,
+    baseY = 0;
+
+  // 拖拽绑定
+  dragable.addEventListener("mousedown", (event) => {
+    const { clientX: startX, clientY: startY } = event;
+
+    const up = (event) => {
+      console.log(event);
+      baseX = baseX + event.clientX - startX;
+      baseY = baseY + event.clientY - startY;
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+
+    const move = (event) => {
+      // 任意拖拽
+      dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`;
+      //  range拖拽
+      //   let range = getNearest(event.clientX, event.clientY);
+      //   range.insertNode(dragable);
+    };
+
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  });
+
+  // 获取range位置
+  const ranges = [];
+  for (let i = 0; i < containter.childNodes[0].textContent.length; i++) {
+    let range = document.createRange();
+    range.setStart(containter.childNodes[0], i);
+    range.setEnd(containter.childNodes[0], i);
+    ranges.push(range);
+  }
+
+  // 阻止选中文字效果
+  document.addEventListener("selectstart", (event) => event.preventDefault());
+
+  // 获取最近range位置
+  function getNearest(x, y) {
+    let min = Infinity;
+    let nearest = null;
+    for (let range of ranges) {
+      let rect = range.getBoundingClientRect();
+      let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+
+      if (distance < min) {
+        nearest = range;
+        min = distance;
+      }
+    }
+    return nearest;
+  }
+</script>
