@@ -1,6 +1,10 @@
 <script>
+  /* 初始配置 */
   let usedReactitvties = []
-  const callbacks = new Map()
+  let reactitvties = new Map()
+  const callbacks = new Map() // 全局依赖
+
+  /* start! */
   const object = {
     a: 1,
     b: 2,
@@ -10,37 +14,45 @@
 
   effect(() => console.log("po.a:", po.a))
   function effect(callback) {
+    // debugger
     usedReactitvties = []
     callback()
 
     for (let reactivty of usedReactitvties) {
       const [obj, prop] = reactivty
-      pushCallback(callbacks, obj, prop)
+      pushCallback(callbacks, obj, prop, callback)
     }
-    console.log(usedReactitvties)
+    // console.log(usedReactitvties)
   }
 
   // 推入回调
-  function pushCallback(callbackList, obj, prop) {
+  // callbackList 是一个总的依赖 store(应该叫 callbackCollections ？)，其中的每个 obj 是单独的一个，prop 则是 obj 具体的哪个
+  function pushCallback(callbackList, obj, prop, callbackFn) {
     //如果没有存储过这个对象，那就先存一个
     if (!callbackList.has(obj)) {
       callbackList.set(obj, new Map())
     }
     // 如果这个对象没有这个属性，那就初始化一个空的
     if (!callbackList.get(obj).has(prop)) {
-      callbackList.set(prop, [])
+      callbackList.get(obj).set(prop, [])
     }
-    console.log(callbackList.get(obj).get(prop))
+    // console.log(callbackList.get(obj).get(prop))
     // 既然有对象有属性(初始空)了，那就推进一个吧
-    callbackList.get(obj).get(prop).push(callback)
+    callbackList.get(obj).get(prop).push(callbackFn)
   }
+
   function reactive(object) {
+    if (reactitvties.has(object)) {
+      return reactitvties.get(object)
+    }
+
     return new Proxy(object, {
       set(obj, prop, value) {
         obj[prop] = value
+
         if (callbacks.get(obj)) {
-          if (callbacks.get(obj).has(pro)) {
-            for (let callback of callbacks.get(obj).has(pro)) {
+          if (callbacks.get(obj).has(prop)) {
+            for (let callback of callbacks.get(obj).get(prop)) {
               callback()
             }
           }
@@ -49,10 +61,21 @@
         return obj[prop]
       },
       get(obj, prop) {
-        console.log(`reative get: objName:${obj},propName:${prop}`)
         usedReactitvties.push([obj, prop])
+        if (typeof prop === "object") {
+          return reactive(obj[prop])
+        }
         return obj[prop]
       },
     })
   }
+
+  var inner = {
+    out: 20,
+    fn() {
+      return this.out
+    },
+  }
+  console.log(inner.fn())
+  console.log((1, inner.fn)())
 </script>
