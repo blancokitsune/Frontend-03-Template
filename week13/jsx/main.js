@@ -32,16 +32,19 @@ class Carousel extends Component {
           pos = (pos + children.length) % children.length;
 
           children[pos].style.transition = `none`;
-          children[pos].style.transform = `translateX(${-position * 500 + offset * 500 + (x % 500)}px)`;
+          children[pos].style.transform = `translateX(${-pos * 500 + offset * 500 + (x % 500)}px)`;
         }
       };
       const up = (event) => {
         const x = event.clientX - startX;
         position = position - Math.round(x / 500);
 
-        for (let child of children) {
-          child.style.transition = ``;
-          child.style.transform = `translateX(${-position * 500}px)`;
+        for (let offset of [0, -Math.sign(Math.round(x / 500) - x + 250 * Math.sign(x))]) {
+          let pos = position + offset;
+          pos = (pos + children.length) % children.length;
+
+          children[pos].style.transition = "";
+          children[pos].style.transform = `translateX(${-pos * 500 + offset * 500}px)`;
         }
         console.log("position", position);
 
